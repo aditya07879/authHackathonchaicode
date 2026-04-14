@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Seat Booking</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+
+  <body class="min-h-screen flex items-center justify-center bg-gray-100">
+    <div class="w-full max-w-md bg-white rounded-xl shadow-lg p-8">
+      <h2 class="text-3xl font-semibold text-center text-gray-800 mb-8">
+        Login
+      </h2>
+
+      <label class="block text-gray-600 mb-1">Username</label>
+      <input
+        id="username"
+        class="w-full mb-4 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+      />
+
+      <label class="block text-gray-600 mb-1">Password</label>
+      <input
+        id="password"
+        type="password"
+        class="w-full mb-6 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+      />
+
+      <button
+        onclick="login()"
+        class="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-2 rounded-lg"
+      >
+        Log In
+      </button>
+
+      <p class="text-center mt-5 text-sm text-gray-600">
+        Don’t have an account?
+        <a href="/signup" class="text-blue-600 hover:underline"
+          >Register here</a
+        >
+      </p>
+    </div>
+
+    <script>
+      async function login() {
+        const username = document.getElementById("username").value;
+        const password = document.getElementById("password").value;
+
+        const res = await fetch("/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username, password }),
+        });
+
+        const data = await res.json();
+
+        if (data.token) {
+          localStorage.setItem("token", data.token);
+          window.location.href = "/";
+        } else {
+          alert("Invalid login");
+        }
+      }
+    </script>
+  </body>
+</html>

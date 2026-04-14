@@ -11,6 +11,7 @@ import pg from "pg";
 import { dirname } from "path";
 import { fileURLToPath } from "url";
 import cors from "cors";
+import { auth, registerAuthRoutes } from "./auth.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -22,10 +23,10 @@ const port = process.env.PORT || 8080;
 // the pooler will keep that connection open for sometime to other clients to reuse
 const pool = new pg.Pool({
   host: "localhost",
-  port: 5433,
+  port: 5432,
   user: "postgres",
   password: "postgres",
-  database: "sql_class_2_db",
+  database: "bookmyticket",
   max: 20,
   connectionTimeoutMillis: 0,
   idleTimeoutMillis: 0,
@@ -33,9 +34,21 @@ const pool = new pg.Pool({
 
 const app = new express();
 app.use(cors());
+app.use(express.json());
+app.set("view engine", "ejs");
+app.set("views", __dirname + "/views");
+registerAuthRoutes(app, pool);
 
 app.get("/", (req, res) => {
-  res.sendFile(__dirname + "/index.html");
+  res.render("index");
+});
+
+app.get("/login", (req, res) => {
+  res.render("login");
+});
+
+app.get("/signup", (req, res) => {
+  res.render("signup");
 });
 //get all seats
 app.get("/seats", async (req, res) => {
@@ -45,10 +58,10 @@ app.get("/seats", async (req, res) => {
 
 //book a seat give the seatId and your name
 
-app.put("/:id/:name", async (req, res) => {
+app.put("/:id", auth, async (req, res) => {
   try {
     const id = req.params.id;
-    const name = req.params.name;
+    const name = req.user.username;
     // payment integration should be here
     // verify payment
     const conn = await pool.connect(); // pick a connection from the pool
@@ -66,8 +79,9 @@ app.put("/:id/:name", async (req, res) => {
     //if no rows found then the operation should fail can't book
     // This shows we Do not have the current seat available for booking
     if (result.rowCount === 0) {
-      res.send({ error: "Seat already booked" });
-      return;
+      await conn.query("ROLLBACK");
+      conn.release();
+      return res.send({ error: "Seat already booked" });
     }
     //if we get the row, we are safe to update
     const sqlU = "update seats set isbooked = 1, name = $2 where id = $1";

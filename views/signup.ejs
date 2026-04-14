@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Seat Booking</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+
+  <body class="min-h-screen flex items-center justify-center bg-gray-100">
+    <div class="w-full max-w-md bg-white rounded-xl shadow-lg p-8">
+      <h2 class="text-3xl font-semibold text-center text-gray-800 mb-8">
+        Create Account
+      </h2>
+
+      <label class="block text-gray-600 mb-1">Username</label>
+      <input
+        id="username"
+        class="w-full mb-4 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400"
+      />
+
+      <label class="block text-gray-600 mb-1">Password</label>
+      <input
+        id="password"
+        type="password"
+        class="w-full mb-6 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400"
+      />
+
+      <button
+        onclick="signup()"
+        class="w-full bg-green-600 hover:bg-green-500 text-white font-semibold py-2 rounded-lg"
+      >
+        Sign Up
+      </button>
+
+      <p class="text-center mt-5 text-sm text-gray-600">
+        Already have an account?
+        <a href="/login" class="text-blue-600 hover:underline">Login</a>
+      </p>
+    </div>
+
+    <script>
+      async function signup() {
+        const username = document.getElementById("username").value;
+        const password = document.getElementById("password").value;
+
+        const res = await fetch("/signup", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username, password }),
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+          alert(data.message);
+          window.location.href = "/login";
+        } else {
+          alert(data.error);
+        }
+      }
+    </script>
+  </body>
+</html>
